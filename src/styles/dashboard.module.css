@@ -1,0 +1,167 @@
+/* Dashboard Layout Styles */
+.pageHeader {
+  margin-bottom: 32px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 500;
+  color: #e5e5e5;
+  letter-spacing: -0.01em;
+}
+
+.pageSubtitle {
+  font-size: 13px;
+  color: #525252;
+  margin-top: 4px;
+}
+
+/* Grid Layouts */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.twoColumnGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* Card Styles */
+.card {
+  background: #0f0f0f;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #737373;
+  margin-bottom: 16px;
+}
+
+/* Progress Bar Styles */
+.progressBarContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progressBarItem {
+  /* Container for each progress bar */
+}
+
+.progressBarHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.progressBarLabel {
+  font-size: 13px;
+  color: #a3a3a3;
+}
+
+.progressBarValue {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e5e5e5;
+  font-variant-numeric: tabular-nums;
+}
+
+.progressBarTrack {
+  height: 4px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: #404040;
+  border-radius: 2px;
+}
+
+.progressBarFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.progressBarSubtext {
+  font-size: 11px;
+  color: #404040;
+}
+
+/* Chart Container */
+.chartContainer {
+  height: 300px;
+}
+
+/* Empty State */
+.emptyState {
+  font-size: 13px;
+  color: #525252;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* Table Overflow */
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.tableFooter {
+  font-size: 12px;
+  color: #525252;
+  margin-top: 12px;
+  text-align: center;
+}
+
+/* Status Badges */
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.badgeNeutral {
+  background: rgba(255, 255, 255, 0.06);
+  color: #737373;
+}
+
+.badgeWarning {
+  background: rgba(255, 200, 50, 0.1);
+  color: #c9a227;
+}
+
+.badgeCritical {
+  background: rgba(255, 100, 100, 0.1);
+  color: #b35555;
+}
+
+/* Monospace Text */
+.monospace {
+  font-family: monospace;
+  color: #e5e5e5;
+}
+
+/* Emphasized Text */
+.emphasized {
+  font-weight: 500;
+  color: #e5e5e5;
+}
+
+/* Tabular Numbers */
+.tabularNums {
+  font-variant-numeric: tabular-nums;
+}
