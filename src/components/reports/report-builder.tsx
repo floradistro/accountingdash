@@ -156,7 +156,12 @@ export function ReportBuilder() {
     }
 
     try {
-      toast.info('Generating PDF...', 'Using React PDF renderer')
+      const rowCount = result.rows.length
+      if (rowCount > 1000) {
+        toast.info('Large report detected', `PDF will include first 1,000 of ${rowCount} rows`)
+      } else {
+        toast.info('Generating PDF...', 'Using React PDF renderer')
+      }
 
       // Use server-side React PDF generation
       const response = await fetch('/api/reports/pdf', {
@@ -166,12 +171,26 @@ export function ReportBuilder() {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to generate PDF')
+        // Try to parse error as JSON, fallback to text
+        let errorMessage = 'Failed to generate PDF'
+        try {
+          const error = await response.json()
+          errorMessage = error.error || errorMessage
+        } catch {
+          const text = await response.text()
+          errorMessage = text || errorMessage
+        }
+        throw new Error(errorMessage)
       }
 
       // Download the PDF
       const blob = await response.blob()
+
+      // Verify we got a PDF
+      if (blob.type !== 'application/pdf') {
+        throw new Error(`Received ${blob.type} instead of PDF. Response may have timed out.`)
+      }
+
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
