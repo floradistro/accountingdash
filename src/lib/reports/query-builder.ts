@@ -415,6 +415,11 @@ export class ReportQueryBuilder {
    * Format a value for display
    */
   static formatValue(metric: Metric, value: number): string {
+    // Handle null/undefined
+    if (value === null || value === undefined || isNaN(value)) {
+      return '—'
+    }
+
     switch (metric) {
       case 'revenue':
       case 'cost':
@@ -423,6 +428,9 @@ export class ReportQueryBuilder {
       case 'discounts':
       case 'net_revenue':
       case 'avg_order_value':
+      case 'po_total':
+      case 'po_paid':
+      case 'po_outstanding':
         return new Intl.NumberFormat('en-US', {
           style: 'currency',
           currency: 'USD',
@@ -433,6 +441,8 @@ export class ReportQueryBuilder {
 
       case 'orders':
       case 'quantity':
+      case 'po_count':
+      case 'po_items':
         return Math.round(value).toLocaleString()
 
       default:
