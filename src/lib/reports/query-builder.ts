@@ -101,8 +101,8 @@ export class ReportQueryBuilder {
       sqlQuery = sqlQuery.eq('location_id', query.locationId)
     }
 
-    // Apply limit
-    const limit = Math.min(query.limit || 10000, 10000)
+    // Apply limit (no cap - allow unlimited results)
+    const limit = query.limit || 1000000 // Default to 1M if not specified
     sqlQuery = sqlQuery.limit(limit)
 
     // Execute query
