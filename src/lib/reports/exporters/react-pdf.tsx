@@ -214,6 +214,7 @@ const formatLabel = (metric: string): string => {
     profit: 'Profit',
     margin: 'Margin %',
     tax: 'Tax',
+    tax_rate: 'Tax Rate %',
     discounts: 'Discounts',
     net_revenue: 'Net Revenue',
     quantity: 'Quantity',

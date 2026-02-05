@@ -27,6 +27,7 @@ export type Metric =
   | 'profit'
   | 'margin'
   | 'tax'
+  | 'tax_rate'
   | 'discounts'
   | 'net_revenue'
   | 'quantity'
@@ -325,6 +326,14 @@ export class ReportQueryBuilder {
           return sum + Number(row.total_tax || row.tax_amount || row.tax || 0)
         }, 0)
 
+      case 'tax_rate': {
+        const tax = this.calculateMetric('tax', data)
+        const subtotal = data.reduce((sum, row) => {
+          return sum + Number(row.subtotal || row.gross_sales || 0)
+        }, 0)
+        return subtotal > 0 ? (tax / subtotal) * 100 : 0
+      }
+
       case 'discounts':
         return data.reduce((sum, row) => {
           return sum + Number(row.total_discounts || row.discount_amount || row.discounts || 0)
@@ -442,6 +451,7 @@ export class ReportQueryBuilder {
         }).format(value)
 
       case 'margin':
+      case 'tax_rate':
         return `${value.toFixed(2)}%`
 
       case 'orders':

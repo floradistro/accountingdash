@@ -40,6 +40,7 @@ const SALES_METRICS: { value: Metric; label: string }[] = [
   { value: 'profit', label: 'Profit' },
   { value: 'margin', label: 'Margin %' },
   { value: 'tax', label: 'Tax' },
+  { value: 'tax_rate', label: 'Tax Rate %' },
   { value: 'discounts', label: 'Discounts' },
   { value: 'net_revenue', label: 'Net Revenue' },
   { value: 'quantity', label: 'Quantity' },
