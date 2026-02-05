@@ -94,7 +94,24 @@ export const useDashboardStore = create<DashboardState>()(
       const response = await fetch('/api/stores')
       if (!response.ok) throw new Error('Failed to fetch stores')
       const data = await response.json()
-      set({ stores: data })
+
+      // Set Flora Distro as default if found and no store is selected yet
+      const currentStore = get().selectedStore
+      if (currentStore === 'all' && data.length > 0) {
+        const floraStore = data.find((s: Store) =>
+          s.store_name?.toLowerCase().includes('flora distro') ||
+          s.store_name?.toLowerCase().includes('flora-distro') ||
+          s.store_name?.toLowerCase() === 'flora distro'
+        )
+        if (floraStore) {
+          set({ stores: data, selectedStore: floraStore.id })
+          get().fetchAll(floraStore.id)
+        } else {
+          set({ stores: data })
+        }
+      } else {
+        set({ stores: data })
+      }
     } catch (error) {
       set({ error: (error as Error).message })
     }

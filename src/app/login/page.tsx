@@ -39,40 +39,69 @@ export default function LoginPage() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '24px',
+      backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(34, 197, 94, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%)',
     }}>
       <div style={{
         width: '100%',
-        maxWidth: '400px',
+        maxWidth: '440px',
       }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '16px',
-            background: 'linear-gradient(to bottom right, #56ADFF, #AE84F2)',
+            width: '80px',
+            height: '80px',
+            borderRadius: '20px',
+            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 16px',
+            margin: '0 auto 20px',
+            boxShadow: '0 8px 32px rgba(34, 197, 94, 0.2), 0 2px 8px rgba(0, 0, 0, 0.3)',
+            position: 'relative' as const,
+            overflow: 'hidden',
           }}>
-            <span style={{ color: 'white', fontWeight: 700, fontSize: '28px' }}>F</span>
+            {/* Decorative elements */}
+            <div style={{
+              position: 'absolute' as const,
+              top: '-20%',
+              right: '-20%',
+              width: '60%',
+              height: '60%',
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '50%',
+            }} />
+            <span style={{
+              color: 'white',
+              fontWeight: 700,
+              fontSize: '36px',
+              position: 'relative' as const,
+              zIndex: 1,
+              textShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            }}>F</span>
           </div>
-          <h1 style={{ color: '#fafafa', fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>
-            Flora Accounting
+          <h1 style={{
+            color: '#fafafa',
+            fontSize: '28px',
+            fontWeight: 600,
+            marginBottom: '8px',
+            letterSpacing: '-0.02em',
+          }}>
+            Flora Distro
           </h1>
-          <p style={{ color: '#71717a', fontSize: '14px' }}>
-            Sign in to access your dashboard
+          <p style={{ color: '#71717a', fontSize: '14px', fontWeight: 500 }}>
+            Accounting Dashboard
           </p>
         </div>
 
         {/* Login Form */}
         <form onSubmit={handleLogin}>
           <div style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: '12px',
-            padding: '32px',
+            background: 'rgba(255,255,255,0.02)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '16px',
+            padding: '40px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
           }}>
             {error && (
               <div style={{
@@ -153,15 +182,26 @@ export default function LoginPage() {
               disabled={loading}
               style={{
                 width: '100%',
-                padding: '12px 24px',
-                background: loading ? '#52525b' : '#fafafa',
-                color: '#09090b',
+                padding: '14px 24px',
+                background: loading ? '#52525b' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                color: '#ffffff',
                 border: 'none',
-                borderRadius: '8px',
-                fontSize: '14px',
+                borderRadius: '10px',
+                fontSize: '15px',
                 fontWeight: 600,
                 cursor: loading ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s',
+                boxShadow: loading ? 'none' : '0 4px 16px rgba(34, 197, 94, 0.3)',
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(-1px)'
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(34, 197, 94, 0.4)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = loading ? 'none' : '0 4px 16px rgba(34, 197, 94, 0.3)'
               }}
             >
               {loading ? 'Signing in...' : 'Sign in'}
