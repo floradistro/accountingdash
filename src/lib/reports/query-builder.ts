@@ -231,6 +231,7 @@ export class ReportQueryBuilder {
           const dateField = row.sale_date || row.order_date
           return this.formatDateByGranularity(dateField, dateGranularity || 'day')
         } else if (dim === 'location') {
+          if (!row.location_id) return 'No Location'
           return lookups.get('locations')?.get(row.location_id) || row.location_name || 'Unknown'
         } else if (dim === 'store') {
           return lookups.get('stores')?.get(row.store_id) || row.store_name || 'Unknown'
@@ -386,26 +387,30 @@ export class ReportQueryBuilder {
 
     // Fetch stores if needed
     if (dimensions.includes('store')) {
-      const storeIds = [...new Set(data.map((d) => d.store_id))]
-      const { data: stores } = await supabase
-        .from('stores')
-        .select('id, name')
-        .in('id', storeIds)
+      const storeIds = [...new Set(data.map((d) => d.store_id).filter(Boolean))]
+      if (storeIds.length > 0) {
+        const { data: stores } = await supabase
+          .from('stores')
+          .select('id, store_name')
+          .in('id', storeIds)
 
-      const storeMap = new Map(stores?.map((s) => [s.id, s.name]) || [])
-      lookups.set('stores', storeMap)
+        const storeMap = new Map(stores?.map((s) => [s.id, s.store_name]) || [])
+        lookups.set('stores', storeMap)
+      }
     }
 
     // Fetch locations if needed
     if (dimensions.includes('location')) {
-      const locationIds = [...new Set(data.map((d) => d.location_id))]
-      const { data: locations } = await supabase
-        .from('locations')
-        .select('id, name')
-        .in('id', locationIds)
+      const locationIds = [...new Set(data.map((d) => d.location_id).filter(Boolean))]
+      if (locationIds.length > 0) {
+        const { data: locations } = await supabase
+          .from('locations')
+          .select('id, name')
+          .in('id', locationIds)
 
-      const locationMap = new Map(locations?.map((l) => [l.id, l.name]) || [])
-      lookups.set('locations', locationMap)
+        const locationMap = new Map(locations?.map((l) => [l.id, l.name]) || [])
+        lookups.set('locations', locationMap)
+      }
     }
 
     return lookups
