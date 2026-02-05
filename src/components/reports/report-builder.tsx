@@ -64,13 +64,16 @@ const GRANULARITIES: { value: DateGranularity; label: string }[] = [
 ]
 
 export function ReportBuilder() {
-  const { dateFrom, dateTo } = useDashboardStore()
+  const { dateFrom, dateTo, stores, selectedStore } = useDashboardStore()
   const [dataSource, setDataSource] = useState<DataSource>('sales')
-  const [dimensions, setDimensions] = useState<Dimension[]>(['date'])
-  const [metrics, setMetrics] = useState<Metric[]>(['orders', 'revenue', 'profit'])
+  const [dimensions, setDimensions] = useState<Dimension[]>(['date', 'location'])
+  const [metrics, setMetrics] = useState<Metric[]>(['orders', 'revenue', 'profit', 'tax', 'tax_rate'])
   const [granularity, setGranularity] = useState<DateGranularity>('day')
   const [result, setResult] = useState<ReportResult | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // Get current store for logo
+  const currentStore = stores.find(s => s.id === selectedStore)
 
   // Get current dimension and metric lists based on data source
   const DIMENSIONS = dataSource === 'purchase_orders' ? PO_DIMENSIONS : SALES_DIMENSIONS
@@ -134,10 +137,17 @@ export function ReportBuilder() {
   const exportPDF = async () => {
     if (!result) return
 
+    // Generate report title based on data source
+    const reportTitle = dataSource === 'purchase_orders'
+      ? 'Purchase Order Report'
+      : 'Sales Report'
+
     const reportData = {
-      title: 'Custom Analytics Report',
-      subtitle: 'Enterprise Performance Analysis',
+      title: reportTitle,
+      subtitle: undefined,
       dateRange: `${dateFrom || 'All time'} to ${dateTo || 'Present'}`,
+      companyName: currentStore?.store_name || 'FLORA DISTRO',
+      logoUrl: currentStore?.logo_url,
       dimensions,
       metrics,
       rows: result.rows,
@@ -165,7 +175,10 @@ export function ReportBuilder() {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `analytics-report-${new Date().toISOString().split('T')[0]}.pdf`
+      const filename = dataSource === 'purchase_orders'
+        ? `purchase-order-report-${new Date().toISOString().split('T')[0]}.pdf`
+        : `sales-report-${new Date().toISOString().split('T')[0]}.pdf`
+      link.download = filename
       link.click()
       URL.revokeObjectURL(url)
 

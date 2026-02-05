@@ -188,12 +188,45 @@ export class ReportQueryBuilder {
 
       // Calculate metrics
       metrics.forEach((metric) => {
-        const value = this.calculateMetric(metric, groupData)
+        let value = this.calculateMetric(metric, groupData)
+
+        // Special handling: Use configured tax rate whenever location is a dimension
+        if (metric === 'tax_rate' && dimensions.includes('location')) {
+          const locationId = groupData[0]?.location_id
+          if (locationId) {
+            const locationData = lookups.get('locations')?.get(locationId)
+            if (locationData?.configuredTaxRate != null) {
+              // Always use the configured rate when grouping by location
+              value = locationData.configuredTaxRate
+            }
+          }
+        }
+
         row[metric] = value
-        totals[metric] += value
+
+        // For percentage metrics, don't sum them - recalculate at the end
+        if (metric !== 'tax_rate' && metric !== 'margin') {
+          totals[metric] += value
+        }
       })
 
       rows.push(row)
+    }
+
+    // Recalculate percentage metrics for totals
+    if (metrics.includes('tax_rate')) {
+      const totalTax = totals['tax'] || 0
+      // Calculate total subtotal from all data
+      const totalSubtotal = data.reduce((sum, row) => {
+        return sum + Number(row.subtotal || row.gross_sales || 0)
+      }, 0)
+      totals['tax_rate'] = totalSubtotal > 0 ? (totalTax / totalSubtotal) * 100 : 0
+    }
+
+    if (metrics.includes('margin')) {
+      const totalRevenue = totals['revenue'] || 0
+      const totalProfit = totals['profit'] || 0
+      totals['margin'] = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
     }
 
     // Sort rows by first dimension
@@ -223,7 +256,7 @@ export class ReportQueryBuilder {
     row: any,
     dimensions: Dimension[],
     dateGranularity: DateGranularity | undefined,
-    lookups: Map<string, Map<string, string>>
+    lookups: Map<string, Map<string, any>>
   ): string {
     return dimensions
       .map((dim) => {
@@ -233,7 +266,8 @@ export class ReportQueryBuilder {
           return this.formatDateByGranularity(dateField, dateGranularity || 'day')
         } else if (dim === 'location') {
           if (!row.location_id) return 'No Location'
-          return lookups.get('locations')?.get(row.location_id) || row.location_name || 'Unknown'
+          const locationData = lookups.get('locations')?.get(row.location_id)
+          return locationData?.name || row.location_name || 'Unknown'
         } else if (dim === 'store') {
           return lookups.get('stores')?.get(row.store_id) || row.store_name || 'Unknown'
         } else if (dim === 'supplier') {
@@ -391,8 +425,8 @@ export class ReportQueryBuilder {
     supabase: SupabaseClient,
     data: any[],
     dimensions: Dimension[]
-  ): Promise<Map<string, Map<string, string>>> {
-    const lookups = new Map<string, Map<string, string>>()
+  ): Promise<Map<string, Map<string, any>>> {
+    const lookups = new Map<string, Map<string, any>>()
 
     // Fetch stores if needed
     if (dimensions.includes('store')) {
@@ -408,16 +442,24 @@ export class ReportQueryBuilder {
       }
     }
 
-    // Fetch locations if needed
+    // Fetch locations if needed (with configured tax rates from settings)
     if (dimensions.includes('location')) {
       const locationIds = [...new Set(data.map((d) => d.location_id).filter(Boolean))]
       if (locationIds.length > 0) {
         const { data: locations } = await supabase
           .from('locations')
-          .select('id, name')
+          .select('id, name, settings')
           .in('id', locationIds)
 
-        const locationMap = new Map(locations?.map((l) => [l.id, l.name]) || [])
+        const locationMap = new Map(
+          locations?.map((l) => {
+            // Extract configured tax rate from settings JSON
+            const configuredRate = l.settings?.tax_config?.sales_tax_rate
+              ? l.settings.tax_config.sales_tax_rate * 100  // Convert 0.0675 to 6.75
+              : null
+            return [l.id, { name: l.name, configuredTaxRate: configuredRate }]
+          }) || []
+        )
         lookups.set('locations', locationMap)
       }
     }

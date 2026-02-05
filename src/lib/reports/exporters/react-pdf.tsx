@@ -12,6 +12,7 @@ import {
   View,
   StyleSheet,
   Font,
+  Image,
 } from '@react-pdf/renderer'
 
 // Use system font - Helvetica (no custom fonts needed)
@@ -19,93 +20,81 @@ import {
 
 const styles = StyleSheet.create({
   page: {
-    padding: 50,
+    padding: 40,
     fontFamily: 'Helvetica',
     fontSize: 10,
-    color: '#1a1a1a',
+    color: '#000000',
     backgroundColor: '#ffffff',
   },
 
-  // Company Header
-  companyHeader: {
-    marginBottom: 20,
-    paddingBottom: 15,
-    borderBottom: '2 solid #2d5f3f',
+  // Header
+  header: {
+    marginBottom: 30,
+    paddingBottom: 20,
+    borderBottom: '2 solid #000000',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    objectFit: 'contain',
   },
   companyName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#2d5f3f',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  companyTagline: {
-    fontSize: 9,
-    color: '#666666',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-
-  // Report Header
-  reportHeader: {
-    marginBottom: 25,
+    color: '#000000',
+    marginBottom: 15,
   },
   title: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#000000',
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 11,
-    color: '#4a4a4a',
-    marginBottom: 6,
+    fontSize: 12,
+    color: '#333333',
+    marginBottom: 8,
   },
   metadata: {
     fontSize: 9,
-    color: '#666666',
+    color: '#333333',
     marginTop: 8,
-    paddingTop: 8,
-    borderTop: '1 solid #e5e5e5',
   },
 
-  // Executive Summary
+  // Summary
   summarySection: {
     marginBottom: 25,
-    backgroundColor: '#f8f9fa',
-    padding: 20,
-    borderRadius: 4,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
-    color: '#2d5f3f',
-    marginBottom: 15,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    color: '#000000',
+    marginBottom: 12,
   },
   metricsGrid: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
   metricBox: {
     flex: 1,
-    padding: 15,
-    backgroundColor: '#ffffff',
-    borderRadius: 4,
-    border: '1 solid #d0d0d0',
+    padding: 12,
+    border: '1 solid #cccccc',
   },
   metricLabel: {
     fontSize: 8,
     color: '#666666',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    marginBottom: 6,
   },
   metricValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#2d5f3f',
+    color: '#000000',
   },
 
   // Table
@@ -113,12 +102,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   table: {
-    border: '1 solid #d0d0d0',
+    border: '1 solid #cccccc',
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#2d5f3f',
-    padding: 12,
+    backgroundColor: '#f5f5f5',
+    borderBottom: '2 solid #000000',
+    padding: 10,
   },
   tableRow: {
     flexDirection: 'row',
@@ -140,18 +130,16 @@ const styles = StyleSheet.create({
   headerCell: {
     fontSize: 9,
     fontWeight: 'bold',
-    color: '#ffffff',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    color: '#000000',
   },
   tableCell: {
     fontSize: 9,
-    color: '#1a1a1a',
+    color: '#000000',
   },
   tableCellBold: {
     fontSize: 9,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#000000',
   },
   cellLeft: {
     textAlign: 'left',
@@ -163,23 +151,15 @@ const styles = StyleSheet.create({
   // Footer
   footer: {
     position: 'absolute',
-    bottom: 40,
-    left: 50,
-    right: 50,
-    borderTop: '2 solid #2d5f3f',
-    paddingTop: 12,
+    bottom: 30,
+    left: 40,
+    right: 40,
+    borderTop: '1 solid #cccccc',
+    paddingTop: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  footerText: {
     fontSize: 8,
     color: '#666666',
-  },
-  footerBrand: {
-    fontSize: 9,
-    fontWeight: 'bold',
-    color: '#2d5f3f',
   },
 })
 
@@ -187,6 +167,8 @@ export interface ReactPDFReportData {
   title: string
   subtitle?: string
   dateRange: string
+  companyName?: string
+  logoUrl?: string
   dimensions: string[]
   metrics: string[]
   rows: Record<string, any>[]
@@ -303,19 +285,22 @@ export const ReportDocument = ({ data }: { data: ReactPDFReportData }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Company Branding */}
-        <View style={styles.companyHeader}>
-          <Text style={styles.companyName}>FLORA DISTRO</Text>
-          <Text style={styles.companyTagline}>Enterprise Analytics & Reporting</Text>
-        </View>
-
-        {/* Report Header */}
-        <View style={styles.reportHeader}>
-          <Text style={styles.title}>{data.title}</Text>
-          {data.subtitle && <Text style={styles.subtitle}>{data.subtitle}</Text>}
-          <Text style={styles.metadata}>
-            Report Period: {data.dateRange} • {data.metadata.rowCount} Records • Generated {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-          </Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.companyName}>{data.companyName || 'FLORA DISTRO'}</Text>
+            <Text style={styles.title}>{data.title}</Text>
+            {data.subtitle && <Text style={styles.subtitle}>{data.subtitle}</Text>}
+            <Text style={styles.metadata}>
+              Report Period: {data.dateRange} • {data.metadata.rowCount} Records • Generated {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </Text>
+          </View>
+          {data.logoUrl && (
+            <Image
+              src={data.logoUrl}
+              style={styles.logo}
+            />
+          )}
         </View>
 
         {/* Executive Summary */}
@@ -388,9 +373,9 @@ export const ReportDocument = ({ data }: { data: ReactPDFReportData }) => {
 
         {/* Footer */}
         <View style={styles.footer} fixed>
-          <Text style={styles.footerBrand}>FLORA DISTRO</Text>
-          <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
-          <Text style={styles.footerText}>Confidential</Text>
+          <Text>FLORA DISTRO</Text>
+          <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+          <Text>Confidential</Text>
         </View>
       </Page>
     </Document>
