@@ -103,6 +103,7 @@ export class ReportQueryBuilder {
 
     // Apply limit (no cap - allow unlimited results)
     const limit = query.limit || 1000000 // Default to 1M if not specified
+    console.log(`[QueryBuilder] Applying limit: ${limit} (query.limit: ${query.limit})`)
     sqlQuery = sqlQuery.limit(limit)
 
     // Execute query
@@ -111,6 +112,8 @@ export class ReportQueryBuilder {
     if (error) {
       throw new Error(`Query failed: ${error.message}`)
     }
+
+    console.log(`[QueryBuilder] Query returned ${data?.length || 0} rows`)
 
     if (!data || data.length === 0) {
       return {
