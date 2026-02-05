@@ -15,6 +15,9 @@ export type Dimension =
   | 'channel'
   | 'payment_method'
   | 'order_type'
+  | 'supplier'
+  | 'po_status'
+  | 'payment_status'
 
 export type Metric =
   | 'orders'
@@ -27,10 +30,18 @@ export type Metric =
   | 'net_revenue'
   | 'quantity'
   | 'avg_order_value'
+  | 'po_count'
+  | 'po_total'
+  | 'po_paid'
+  | 'po_outstanding'
+  | 'po_items'
 
 export type DateGranularity = 'day' | 'week' | 'month' | 'quarter' | 'year'
 
+export type DataSource = 'sales' | 'purchase_orders'
+
 export interface ReportQuery {
+  dataSource?: DataSource
   dimensions: Dimension[]
   metrics: Metric[]
   dateGranularity?: DateGranularity
@@ -60,17 +71,22 @@ export class ReportQueryBuilder {
   ): Promise<ReportResult> {
     const startTime = Date.now()
 
-    // Use v_daily_sales_detail view as base - includes all dimensions and metrics
-    const baseView = 'v_daily_sales_detail'
+    // Select base view based on data source
+    const dataSource = query.dataSource || 'sales'
+    const baseView = dataSource === 'purchase_orders'
+      ? 'v_purchase_order_detail'
+      : 'v_daily_sales_detail'
+
+    const dateColumn = dataSource === 'purchase_orders' ? 'order_date' : 'sale_date'
 
     let sqlQuery = supabase.from(baseView).select('*')
 
     // Apply date filters
     if (query.dateFrom) {
-      sqlQuery = sqlQuery.gte('sale_date', query.dateFrom)
+      sqlQuery = sqlQuery.gte(dateColumn, query.dateFrom)
     }
     if (query.dateTo) {
-      sqlQuery = sqlQuery.lte('sale_date', query.dateTo)
+      sqlQuery = sqlQuery.lte(dateColumn, query.dateTo)
     }
 
     // Apply store filter
@@ -200,11 +216,19 @@ export class ReportQueryBuilder {
     return dimensions
       .map((dim) => {
         if (dim === 'date') {
-          return this.formatDateByGranularity(row.sale_date, dateGranularity || 'day')
+          // Support both sale_date and order_date
+          const dateField = row.sale_date || row.order_date
+          return this.formatDateByGranularity(dateField, dateGranularity || 'day')
         } else if (dim === 'location') {
-          return lookups.get('locations')?.get(row.location_id) || 'Unknown'
+          return lookups.get('locations')?.get(row.location_id) || row.location_name || 'Unknown'
         } else if (dim === 'store') {
-          return lookups.get('stores')?.get(row.store_id) || 'Unknown'
+          return lookups.get('stores')?.get(row.store_id) || row.store_name || 'Unknown'
+        } else if (dim === 'supplier') {
+          return row.supplier_name || 'Unknown'
+        } else if (dim === 'po_status') {
+          return row.status || 'Unknown'
+        } else if (dim === 'payment_status') {
+          return row.payment_status || 'Unknown'
         } else if (dim === 'channel') {
           return row.pickup_location_id ? 'In-Store' : 'Online'
         } else {
@@ -308,6 +332,29 @@ export class ReportQueryBuilder {
         const orders = this.calculateMetric('orders', data)
         return orders > 0 ? revenue / orders : 0
       }
+
+      case 'po_count':
+        return data.reduce((sum, row) => sum + Number(row.order_count || 1), 0)
+
+      case 'po_total':
+        return data.reduce((sum, row) => {
+          return sum + Number(row.total_amount || 0)
+        }, 0)
+
+      case 'po_paid':
+        return data.reduce((sum, row) => {
+          return sum + Number(row.amount_paid || 0)
+        }, 0)
+
+      case 'po_outstanding':
+        return data.reduce((sum, row) => {
+          return sum + Number(row.amount_outstanding || 0)
+        }, 0)
+
+      case 'po_items':
+        return data.reduce((sum, row) => {
+          return sum + Number(row.total_quantity || row.item_count || 0)
+        }, 0)
 
       default:
         return 0
