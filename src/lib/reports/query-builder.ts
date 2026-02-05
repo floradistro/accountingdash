@@ -196,9 +196,19 @@ export class ReportQueryBuilder {
 
     // Sort rows by first dimension
     rows.sort((a, b) => {
-      const aVal = String(a[dimensions[0]] || '')
-      const bVal = String(b[dimensions[0]] || '')
-      return aVal.localeCompare(bVal)
+      const firstDim = dimensions[0]
+      const aVal = a[firstDim]
+      const bVal = b[firstDim]
+
+      // If first dimension is date, parse and sort chronologically (descending)
+      if (firstDim === 'date') {
+        const aDate = new Date(aVal)
+        const bDate = new Date(bVal)
+        return bDate.getTime() - aDate.getTime() // Descending (newest first)
+      }
+
+      // Otherwise, sort alphabetically
+      return String(aVal || '').localeCompare(String(bVal || ''))
     })
 
     return { rows, totals }
