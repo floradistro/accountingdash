@@ -7,6 +7,9 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const query: ReportQuery = await request.json()
 
+    // Debug logging
+    console.log('Report Query Received:', JSON.stringify(query, null, 2))
+
     // Validate query
     if (!query.dimensions || query.dimensions.length === 0) {
       return NextResponse.json(
@@ -24,6 +27,13 @@ export async function POST(request: NextRequest) {
 
     // Execute query
     const result = await ReportQueryBuilder.execute(supabase, query)
+
+    // Debug logging
+    console.log('Report Result:', {
+      rowCount: result.metadata.rowCount,
+      totalMetrics: result.totals,
+      executionTime: result.metadata.executionTime
+    })
 
     return NextResponse.json(result)
   } catch (error) {
