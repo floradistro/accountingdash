@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { useDashboardStore } from '@/stores/dashboard.store'
-import { Play, FileDown, Loader2 } from 'lucide-react'
+import { Play, FileDown, Loader2, FileSpreadsheet } from 'lucide-react'
 import { toast } from '@/components/ui/toast'
 import type { Dimension, Metric, DateGranularity, ReportQuery, DataSource } from '@/lib/reports/query-builder'
 import { ReportQueryBuilder } from '@/lib/reports/query-builder'
 import { ProfessionalPDFExporter } from '@/lib/reports/exporters/pdf-professional'
+import * as XLSX from 'xlsx'
 
 interface ReportResult {
   rows: Record<string, any>[]
@@ -237,6 +238,61 @@ export function ReportBuilder() {
     toast.success('CSV exported', 'Report downloaded successfully')
   }
 
+  const exportExcel = () => {
+    if (!result) return
+
+    try {
+      // Prepare data with proper headers
+      const headers = [...dimensions, ...metrics]
+      const data = result.rows.map((row) => {
+        const rowData: any = {}
+        headers.forEach((header) => {
+          rowData[header] = row[header]
+        })
+        return rowData
+      })
+
+      // Add totals row
+      const totalsRow: any = {}
+      dimensions.forEach((dim) => {
+        totalsRow[dim] = dim === dimensions[0] ? 'TOTALS' : ''
+      })
+      metrics.forEach((metric) => {
+        totalsRow[metric] = result.totals[metric] || 0
+      })
+
+      // Create worksheet
+      const ws = XLSX.utils.json_to_sheet([...data, {}, totalsRow])
+
+      // Set column widths
+      const colWidths = headers.map((header) => ({
+        wch: Math.max(
+          header.length,
+          ...data.slice(0, 100).map((row) => String(row[header] || '').length)
+        ) + 2
+      }))
+      ws['!cols'] = colWidths
+
+      // Create workbook
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'Report')
+
+      // Generate filename
+      const reportTitle = dataSource === 'purchase_orders'
+        ? 'purchase-order-report'
+        : 'sales-report'
+      const filename = `${reportTitle}-${new Date().toISOString().split('T')[0]}.xlsx`
+
+      // Download
+      XLSX.writeFile(wb, filename)
+
+      toast.success('Excel exported', `${result.rows.length} rows downloaded successfully`)
+    } catch (error) {
+      console.error('Excel export error:', error)
+      toast.error('Excel export failed', error instanceof Error ? error.message : 'Unknown error')
+    }
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Data Source Selector */}
@@ -363,6 +419,10 @@ export function ReportBuilder() {
         </button>
         {result && (
           <>
+            <button onClick={exportExcel} style={{ padding: '12px 20px', background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FileSpreadsheet size={16} />
+              Excel
+            </button>
             <button onClick={exportCSV} style={{ padding: '12px 20px', background: 'transparent', color: '#737373', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FileDown size={16} />
               CSV
