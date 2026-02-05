@@ -24,6 +24,7 @@ const SALES_DIMENSIONS: { value: Dimension; label: string }[] = [
 ]
 
 const PO_DIMENSIONS: { value: Dimension; label: string }[] = [
+  { value: 'po_number', label: 'PO Number' },
   { value: 'date', label: 'Order Date' },
   { value: 'location', label: 'Location' },
   { value: 'store', label: 'Store' },
@@ -236,8 +237,8 @@ export function ReportBuilder() {
           <button
             onClick={() => {
               setDataSource('purchase_orders')
-              setDimensions(['date'])
-              setMetrics(['po_count', 'po_total', 'po_outstanding'])
+              setDimensions(['po_number', 'date', 'supplier'])
+              setMetrics(['po_total', 'po_outstanding'])
             }}
             style={{
               flex: 1,

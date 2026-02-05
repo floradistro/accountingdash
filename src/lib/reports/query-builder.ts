@@ -16,6 +16,7 @@ export type Dimension =
   | 'payment_method'
   | 'order_type'
   | 'supplier'
+  | 'po_number'
   | 'po_status'
   | 'payment_status'
 
@@ -235,6 +236,8 @@ export class ReportQueryBuilder {
           return lookups.get('stores')?.get(row.store_id) || row.store_name || 'Unknown'
         } else if (dim === 'supplier') {
           return row.supplier_name || 'Unknown'
+        } else if (dim === 'po_number') {
+          return row.po_number || 'Unknown'
         } else if (dim === 'po_status') {
           return row.status || 'Unknown'
         } else if (dim === 'payment_status') {
