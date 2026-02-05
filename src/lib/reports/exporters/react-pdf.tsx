@@ -19,69 +19,93 @@ import {
 
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
+    padding: 50,
     fontFamily: 'Helvetica',
     fontSize: 10,
-    color: '#000000',
+    color: '#1a1a1a',
     backgroundColor: '#ffffff',
   },
 
-  // Header
-  header: {
-    marginBottom: 30,
-    borderBottom: '1 solid #e5e5e5',
+  // Company Header
+  companyHeader: {
+    marginBottom: 20,
     paddingBottom: 15,
+    borderBottom: '2 solid #2d5f3f',
+  },
+  companyName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2d5f3f',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  companyTagline: {
+    fontSize: 9,
+    color: '#666666',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+
+  // Report Header
+  reportHeader: {
+    marginBottom: 25,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 700,
-    color: '#000000',
-    marginBottom: 6,
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 11,
-    color: '#000000',
-    marginBottom: 4,
+    color: '#4a4a4a',
+    marginBottom: 6,
   },
   metadata: {
     fontSize: 9,
-    color: '#000000',
-    marginTop: 4,
+    color: '#666666',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTop: '1 solid #e5e5e5',
   },
 
   // Executive Summary
   summarySection: {
     marginBottom: 25,
+    backgroundColor: '#f8f9fa',
+    padding: 20,
+    borderRadius: 4,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: 700,
-    color: '#000000',
-    marginBottom: 12,
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#2d5f3f',
+    marginBottom: 15,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
   metricsGrid: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 15,
+    gap: 12,
   },
   metricBox: {
     flex: 1,
-    padding: 12,
-    backgroundColor: '#eeeeee',
+    padding: 15,
+    backgroundColor: '#ffffff',
     borderRadius: 4,
-    border: '1 solid #333333',
+    border: '1 solid #d0d0d0',
   },
   metricLabel: {
     fontSize: 8,
-    color: '#000000',
-    marginBottom: 6,
+    color: '#666666',
+    marginBottom: 8,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
   },
   metricValue: {
-    fontSize: 16,
-    fontWeight: 700,
-    color: '#000000',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2d5f3f',
   },
 
   // Table
@@ -89,14 +113,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   table: {
-    border: '1 solid #e5e5e5',
-    borderRadius: 4,
+    border: '1 solid #d0d0d0',
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#dddddd',
-    borderBottom: '2 solid #000000',
-    padding: 10,
+    backgroundColor: '#2d5f3f',
+    padding: 12,
   },
   tableRow: {
     flexDirection: 'row',
@@ -117,19 +139,19 @@ const styles = StyleSheet.create({
   },
   headerCell: {
     fontSize: 9,
-    fontWeight: 700,
-    color: '#000000',
+    fontWeight: 'bold',
+    color: '#ffffff',
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
   },
   tableCell: {
     fontSize: 9,
-    color: '#000000',
+    color: '#1a1a1a',
   },
   tableCellBold: {
     fontSize: 9,
-    fontWeight: 700,
-    color: '#000000',
+    fontWeight: 'bold',
+    color: '#1a1a1a',
   },
   cellLeft: {
     textAlign: 'left',
@@ -141,15 +163,23 @@ const styles = StyleSheet.create({
   // Footer
   footer: {
     position: 'absolute',
-    bottom: 30,
-    left: 40,
-    right: 40,
-    borderTop: '1 solid #e5e5e5',
-    paddingTop: 10,
+    bottom: 40,
+    left: 50,
+    right: 50,
+    borderTop: '2 solid #2d5f3f',
+    paddingTop: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  footerText: {
     fontSize: 8,
-    color: '#000000',
+    color: '#666666',
+  },
+  footerBrand: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#2d5f3f',
   },
 })
 
@@ -272,12 +302,18 @@ export const ReportDocument = ({ data }: { data: ReactPDFReportData }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header */}
-        <View style={styles.header}>
+        {/* Company Branding */}
+        <View style={styles.companyHeader}>
+          <Text style={styles.companyName}>FLORA DISTRO</Text>
+          <Text style={styles.companyTagline}>Enterprise Analytics & Reporting</Text>
+        </View>
+
+        {/* Report Header */}
+        <View style={styles.reportHeader}>
           <Text style={styles.title}>{data.title}</Text>
           {data.subtitle && <Text style={styles.subtitle}>{data.subtitle}</Text>}
           <Text style={styles.metadata}>
-            Period: {data.dateRange} | Generated in {data.metadata.executionTime}ms | {data.metadata.rowCount} rows
+            Report Period: {data.dateRange} • {data.metadata.rowCount} Records • Generated {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </Text>
         </View>
 
@@ -351,9 +387,9 @@ export const ReportDocument = ({ data }: { data: ReactPDFReportData }) => {
 
         {/* Footer */}
         <View style={styles.footer} fixed>
-          <Text>Powered by Analytics Dashboard</Text>
-          <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
-          <Text>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+          <Text style={styles.footerBrand}>FLORA DISTRO</Text>
+          <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+          <Text style={styles.footerText}>Confidential</Text>
         </View>
       </Page>
     </Document>
