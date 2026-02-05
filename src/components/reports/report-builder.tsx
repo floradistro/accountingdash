@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useDashboardStore } from '@/stores/dashboard.store'
 import { Play, FileDown, Loader2 } from 'lucide-react'
 import { toast } from '@/components/ui/toast'
-import type { Dimension, Metric, DateGranularity, ReportQuery } from '@/lib/reports/query-builder'
+import type { Dimension, Metric, DateGranularity, ReportQuery, DataSource } from '@/lib/reports/query-builder'
 import { ReportQueryBuilder } from '@/lib/reports/query-builder'
 import { ProfessionalPDFExporter } from '@/lib/reports/exporters/pdf-professional'
 
@@ -14,7 +14,7 @@ interface ReportResult {
   metadata: { rowCount: number; executionTime: number }
 }
 
-const DIMENSIONS: { value: Dimension; label: string }[] = [
+const SALES_DIMENSIONS: { value: Dimension; label: string }[] = [
   { value: 'date', label: 'Date' },
   { value: 'location', label: 'Location' },
   { value: 'store', label: 'Store' },
@@ -23,7 +23,16 @@ const DIMENSIONS: { value: Dimension; label: string }[] = [
   { value: 'order_type', label: 'Order Type' },
 ]
 
-const METRICS: { value: Metric; label: string }[] = [
+const PO_DIMENSIONS: { value: Dimension; label: string }[] = [
+  { value: 'date', label: 'Order Date' },
+  { value: 'location', label: 'Location' },
+  { value: 'store', label: 'Store' },
+  { value: 'supplier', label: 'Supplier' },
+  { value: 'po_status', label: 'PO Status' },
+  { value: 'payment_status', label: 'Payment Status' },
+]
+
+const SALES_METRICS: { value: Metric; label: string }[] = [
   { value: 'orders', label: 'Orders' },
   { value: 'revenue', label: 'Revenue' },
   { value: 'cost', label: 'Cost (COGS)' },
@@ -36,6 +45,14 @@ const METRICS: { value: Metric; label: string }[] = [
   { value: 'avg_order_value', label: 'Avg Order Value' },
 ]
 
+const PO_METRICS: { value: Metric; label: string }[] = [
+  { value: 'po_count', label: 'Purchase Orders' },
+  { value: 'po_total', label: 'Total Amount' },
+  { value: 'po_paid', label: 'Amount Paid' },
+  { value: 'po_outstanding', label: 'Outstanding Balance' },
+  { value: 'po_items', label: 'Total Items' },
+]
+
 const GRANULARITIES: { value: DateGranularity; label: string }[] = [
   { value: 'day', label: 'Daily' },
   { value: 'week', label: 'Weekly' },
@@ -46,11 +63,16 @@ const GRANULARITIES: { value: DateGranularity; label: string }[] = [
 
 export function ReportBuilder() {
   const { dateFrom, dateTo } = useDashboardStore()
+  const [dataSource, setDataSource] = useState<DataSource>('sales')
   const [dimensions, setDimensions] = useState<Dimension[]>(['date'])
   const [metrics, setMetrics] = useState<Metric[]>(['orders', 'revenue', 'profit'])
   const [granularity, setGranularity] = useState<DateGranularity>('day')
   const [result, setResult] = useState<ReportResult | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // Get current dimension and metric lists based on data source
+  const DIMENSIONS = dataSource === 'purchase_orders' ? PO_DIMENSIONS : SALES_DIMENSIONS
+  const METRICS = dataSource === 'purchase_orders' ? PO_METRICS : SALES_METRICS
 
   const toggleDimension = (dim: Dimension) => {
     setDimensions((prev) =>
@@ -77,6 +99,7 @@ export function ReportBuilder() {
     setLoading(true)
     try {
       const query: ReportQuery = {
+        dataSource,
         dimensions,
         metrics,
         dateGranularity: dimensions.includes('date') ? granularity : undefined,
@@ -182,6 +205,59 @@ export function ReportBuilder() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Data Source Selector */}
+      <div style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '20px' }}>
+        <h3 style={{ fontSize: '13px', fontWeight: 500, color: '#e5e5e5', marginBottom: '12px' }}>
+          Report Type
+        </h3>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={() => {
+              setDataSource('sales')
+              setDimensions(['date'])
+              setMetrics(['orders', 'revenue', 'profit'])
+            }}
+            style={{
+              flex: 1,
+              padding: '16px',
+              background: dataSource === 'sales' ? 'rgba(255,255,255,0.06)' : '#0f0f0f',
+              border: `2px solid ${dataSource === 'sales' ? '#737373' : 'rgba(255,255,255,0.06)'}`,
+              borderRadius: '8px',
+              color: dataSource === 'sales' ? '#e5e5e5' : '#737373',
+              fontSize: '13px',
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            <div style={{ fontWeight: 600, marginBottom: '4px' }}>Sales Reports</div>
+            <div style={{ fontSize: '11px', opacity: 0.7 }}>Orders, revenue, COGS, profit</div>
+          </button>
+          <button
+            onClick={() => {
+              setDataSource('purchase_orders')
+              setDimensions(['date'])
+              setMetrics(['po_count', 'po_total', 'po_outstanding'])
+            }}
+            style={{
+              flex: 1,
+              padding: '16px',
+              background: dataSource === 'purchase_orders' ? 'rgba(255,255,255,0.06)' : '#0f0f0f',
+              border: `2px solid ${dataSource === 'purchase_orders' ? '#737373' : 'rgba(255,255,255,0.06)'}`,
+              borderRadius: '8px',
+              color: dataSource === 'purchase_orders' ? '#e5e5e5' : '#737373',
+              fontSize: '13px',
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            <div style={{ fontWeight: 600, marginBottom: '4px' }}>Purchase Order Reports</div>
+            <div style={{ fontSize: '11px', opacity: 0.7 }}>POs, spending, supplier tracking</div>
+          </button>
+        </div>
+      </div>
+
       {/* Configuration */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
         {/* Dimensions */}
